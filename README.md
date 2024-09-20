@@ -1,6 +1,14 @@
 # My ever first Java Project
 
-## Build
+# Table of Contents
+
+- [My ever first Java Project](#my-ever-first-java-project)
+- [Table of Contents](#table-of-contents)
+- [Build](#build)
+- [Run](#run)
+- [Task Reference](#task-reference)
+
+# Build
 
 Run following maven commands in order:
 
@@ -10,11 +18,11 @@ Run following maven commands in order:
 4. `mvn test-compile -f "./pom.xml"`
 5. `mvn package -f "./pom.xml"`
 
-## Run
+# Run
 
 `java -jar ./target/xlsx_reader-1.0.jar ./test.xlsx`
 
-## Задание
+# Task Reference
 
 1. Прочитайте файл Excel
 2. Создайте Java-классы в соответствии с предложенной схемой
