@@ -50,8 +50,15 @@ public class Main {
                 .filter(e -> e instanceof com.xlsx_reader.domain.Company)
                 .count();
 
+        long individualsUnder20 = employees.stream()
+                .filter(e -> e instanceof com.xlsx_reader.domain.Individual)
+                .map(e -> (com.xlsx_reader.domain.Individual) e)
+                .filter(i -> i.getAge() < 20)
+                .count();
+
         System.out.println("Total individuals: " + individualCount);
         System.out.println("Total companies: " + companyCount);
+        System.out.println("Total individuals under 20: " + individualsUnder20);
 
         System.out.println("Names and surnames of employees:");
         employees.stream()
