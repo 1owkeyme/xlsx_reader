@@ -18,7 +18,6 @@ public class XlsxReaderService {
     protected static final int FIRST_NAME_COL = 6;
     protected static final int LAST_NAME_COL = 7;
     protected static final int HAS_CHILDREN_COL = 8;
-    protected static final String HAS_CHILDREN_TRUE_VALUE = "ИСТИНА";
     protected static final int AGE_COL = 9;
     protected static final int COMPANY_NAME_COL = 11;
     protected static final int COMPANY_TYPE_COL = 12;
@@ -52,9 +51,9 @@ public class XlsxReaderService {
 
     private Employee processRow(Row row, long id) throws ExcelParsingException {
         try {
-            String email = getCellValue(row, EMAIL_COL);
-            String phone = getCellValue(row, PHONE_COL);
-            String address = getCellValue(row, ADDRESS_COL);
+            String email = getCellValue(row, EMAIL_COL, String.class);
+            String phone = getCellValue(row, PHONE_COL, String.class);
+            String address = getCellValue(row, ADDRESS_COL, String.class);
 
             BankAccount bankAccount = createBankAccount(row);
 
@@ -72,10 +71,10 @@ public class XlsxReaderService {
             String address,
             BankAccount bankAccount) throws ExcelParsingException {
 
-        String firstName = getCellValue(row, FIRST_NAME_COL);
-        String lastName = getCellValue(row, LAST_NAME_COL);
-        String companyName = getCellValue(row, COMPANY_NAME_COL);
-        String companyTypeValue = getCellValue(row, COMPANY_TYPE_COL);
+        String firstName = getCellValue(row, FIRST_NAME_COL, String.class);
+        String lastName = getCellValue(row, LAST_NAME_COL, String.class);
+        String companyName = getCellValue(row, COMPANY_NAME_COL, String.class);
+        String companyTypeValue = getCellValue(row, COMPANY_TYPE_COL, String.class);
 
         if (firstName != null && !firstName.trim().isEmpty() &&
                 lastName != null && !lastName.trim().isEmpty()) {
@@ -99,8 +98,8 @@ public class XlsxReaderService {
             BankAccount bankAccount,
             String firstName,
             String lastName) throws ExcelParsingException {
-        boolean hasChildren = HAS_CHILDREN_TRUE_VALUE.equals(getCellValue(row, HAS_CHILDREN_COL));
-        int age = (int) row.getCell(AGE_COL).getNumericCellValue();
+        boolean hasChildren = getCellValue(row, HAS_CHILDREN_COL, Boolean.class);
+        int age = getCellValue(row, AGE_COL, Integer.class);
         return new Individual(id, email, phone, address, bankAccount, firstName, lastName, hasChildren, age);
     }
 
@@ -124,9 +123,9 @@ public class XlsxReaderService {
     }
 
     private BankAccount createBankAccount(Row row) throws ExcelParsingException {
-        String iban = getCellValue(row, IBAN_COL);
-        String bic = getCellValue(row, BIC_COL);
-        String accountHolder = getCellValue(row, ACCOUNT_HOLDER_COL);
+        String iban = getCellValue(row, IBAN_COL, String.class);
+        String bic = getCellValue(row, BIC_COL, String.class);
+        String accountHolder = getCellValue(row, ACCOUNT_HOLDER_COL, String.class);
 
         if (iban == null || bic == null || accountHolder == null) {
             throw new ExcelParsingException("Incomplete bank account data on row: " + row.getRowNum());
@@ -134,8 +133,57 @@ public class XlsxReaderService {
         return new BankAccount(iban, bic, accountHolder);
     }
 
-    private String getCellValue(Row row, int columnIndex) {
+    private <T> T getCellValue(Row row, int columnIndex, Class<T> clazz) throws ExcelParsingException {
         Cell cell = row.getCell(columnIndex);
-        return (cell != null) ? cell.toString() : null;
+        if (cell == null)
+            return null;
+
+        CellType cellType = cell.getCellType();
+
+        try {
+            return switch (cellType) {
+                case STRING -> {
+                    if (clazz == String.class) {
+                        yield clazz.cast(cell.getStringCellValue());
+                    } else {
+                        throw new ExcelParsingException(
+                                "Expected " + clazz.getSimpleName() + " but got STRING at row: " + row.getRowNum());
+                    }
+                }
+                case NUMERIC -> {
+                    if (clazz == String.class) {
+                        double numericValue = cell.getNumericCellValue();
+                        if (numericValue == Math.floor(numericValue)) {
+                            yield clazz.cast(String.valueOf((long) numericValue));
+                        } else {
+                            yield clazz.cast(String.valueOf(numericValue));
+                        }
+                    } else if (clazz == Long.class) {
+                        yield clazz.cast((long) cell.getNumericCellValue());
+                    } else if (clazz == Integer.class) {
+                        yield clazz.cast((int) cell.getNumericCellValue());
+                    } else {
+                        throw new ExcelParsingException(
+                                "Expected " + clazz.getSimpleName() + " but got NUMERIC at row: " + row.getRowNum());
+                    }
+                }
+                case BOOLEAN -> {
+                    if (clazz == String.class) {
+                        yield clazz.cast(String.valueOf(cell.getBooleanCellValue()));
+                    } else if (clazz == Boolean.class) {
+                        yield clazz.cast(cell.getBooleanCellValue());
+                    } else {
+                        throw new ExcelParsingException(
+                                "Expected " + clazz.getSimpleName() + " but got BOOLEAN at row: " + row.getRowNum());
+                    }
+                }
+                case BLANK -> null;
+                default -> throw new ExcelParsingException("Unsupported cell type: " + cellType);
+            };
+        } catch (ClassCastException e) {
+            throw new ExcelParsingException("Error casting cell value at index " + columnIndex + ": " + e.getMessage(),
+                    e);
+        }
     }
+
 }
