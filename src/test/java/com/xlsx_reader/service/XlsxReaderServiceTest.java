@@ -47,7 +47,7 @@ public class XlsxReaderServiceTest {
             individualRow.createCell(XlsxReaderService.ADDRESS_COL).setCellValue("123 Main St");
             individualRow.createCell(XlsxReaderService.FIRST_NAME_COL).setCellValue("John");
             individualRow.createCell(XlsxReaderService.LAST_NAME_COL).setCellValue("Doe");
-            individualRow.createCell(XlsxReaderService.HAS_CHILDREN_COL).setCellValue("ИСТИНА");
+            individualRow.createCell(XlsxReaderService.HAS_CHILDREN_COL).setCellValue(true);
             individualRow.createCell(XlsxReaderService.AGE_COL).setCellValue(30);
             individualRow.createCell(XlsxReaderService.IBAN_COL).setCellValue("some-iban");
             individualRow.createCell(XlsxReaderService.BIC_COL).setCellValue("some-bic");
@@ -137,7 +137,7 @@ public class XlsxReaderServiceTest {
             row.createCell(XlsxReaderService.ADDRESS_COL).setCellValue("123 Main St");
             row.createCell(XlsxReaderService.FIRST_NAME_COL).setCellValue("John");
             row.createCell(XlsxReaderService.LAST_NAME_COL).setCellValue("Doe");
-            row.createCell(XlsxReaderService.HAS_CHILDREN_COL).setCellValue("ИСТИНА");
+            row.createCell(XlsxReaderService.HAS_CHILDREN_COL).setCellValue(true);
             row.createCell(XlsxReaderService.AGE_COL).setCellValue(30);
             row.createCell(XlsxReaderService.IBAN_COL).setCellValue("some-iban");
             row.createCell(XlsxReaderService.BIC_COL).setCellValue("some-bic");
